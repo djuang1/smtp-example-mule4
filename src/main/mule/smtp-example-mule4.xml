@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:email="http://www.mulesoft.org/schema/mule/email"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+<email:smtp-config name="Email_SMTP" doc:name="Email SMTP" doc:id="5dced09f-241f-4b55-abba-f367654af635" >
+		<email:smtp-connection host="smtp.gmail.com" port="587" user="${smtp.user}" password="${smtp.password}" >
+			<email:properties >
+				<email:property key="mail.smtp.starttls.enable" value="true" />
+			</email:properties>
+		</email:smtp-connection>
+	</email:smtp-config>
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="f5c5981e-e678-496f-8498-1000d4bb7be8" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="90c964ad-a2c5-44b7-89be-dcccd90f90ae" file="mule-app.properties" />
+	<flow name="smtp-example-mule4Flow" doc:id="6d62d3df-ebd8-4289-be58-d2a707b1e834" >
+		<http:listener doc:name="Listener" doc:id="2d14a278-5cf0-409e-930f-f3119f0421e3" config-ref="HTTP_Listener_config" path="/send"/>
+		<ee:transform doc:name="Transform Message" doc:id="0ea74478-c479-444d-b4e2-f75a657299d8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+"Hello World!"]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<email:send doc:name="Send" doc:id="2358ffe5-8471-4537-bcad-60191839fd67" config-ref="Email_SMTP" fromAddress='${smtp.from}' subject="Test Mule E-mail">
+			<email:to-addresses>
+				<email:to-address value='${smtp.to}' />
+			</email:to-addresses>
+			<email:body contentType="text/plain" />
+		</email:send>
+		<logger level="INFO" doc:name="Logger" doc:id="be4c23b8-c096-4ef6-b79a-cecf0d5aff9a" />
+	</flow>
+</mule>
